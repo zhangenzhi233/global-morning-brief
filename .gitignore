@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+run-output/
+.delivery/
+.env
+.env.*
+!.env.example
+*.secret
+preview-*/
+global-preview-*/
+chinese-*-preview-*/
+testtmp_*/
+tmp*/
+MEMORY.md
+handoffs/

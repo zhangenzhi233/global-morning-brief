@@ -1,0 +1,84 @@
+name: Verify mail sender (no delivery)
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_sender:
+        description: 'Expected sending mailbox; authorization code stays in Secrets'
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify expected account and SMTP authentication without sending
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          EXPECTED_SMTP_USER: ${{ github.event.inputs.expected_sender }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import smtplib
+          from briefing import SendRefused, _smtp_connect, validate_address
+
+          def finish(status, matched=False, authenticated=False):
+              print(json.dumps({
+                  "check": "smtp_auth_only",
+                  "status": status,
+                  "expected_sender_matched": matched,
+                  "authenticated": authenticated,
+                  "email_sent": False,
+                  "model_requests": 0,
+              }))
+              raise SystemExit(0 if authenticated else 1)
+
+          user = os.environ.get("SMTP_USER", "").strip()
+          expected = os.environ.get("EXPECTED_SMTP_USER", "").strip()
+          if not expected or user != expected:
+              finish("unexpected_sender")
+          try:
+              validate_address(user, "SMTP_USER")
+          except SendRefused:
+              finish("invalid_sender", matched=True)
+          password = os.environ.get("SMTP_PASSWORD", "")
+          if not password:
+              finish("missing_authorization_code", matched=True)
+
+          connection = None
+          status = "connection_or_auth_failed"
+          authenticated = False
+          try:
+              # Reuse the production TLS settings. Never issue MAIL/RCPT/DATA.
+              connection, _ = _smtp_connect(os.environ)
+              reply_code, _ = connection.login(user, password)
+              if reply_code == 235:
+                  authenticated = True
+                  status = "ok"
+          except smtplib.SMTPAuthenticationError:
+              status = "authentication_failed"
+          except Exception:
+              # Server messages may contain account details; do not log them.
+              status = "connection_or_auth_failed"
+          finally:
+              if connection is not None:
+                  try:
+                      connection.close()
+                  except Exception:
+                      pass
+          finish(status, matched=True, authenticated=authenticated)
+          PY

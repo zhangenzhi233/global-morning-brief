@@ -1,0 +1,269 @@
+{
+  "strict_elements": true,
+  "strict_require_fields": [
+    "event_time",
+    "location",
+    "subject"
+  ],
+  "max_items": 24,
+  "international_reserved_items": 6,
+  "max_candidates_per_source": 10,
+  "fresh_hours": 24,
+  "http_timeout": 15,
+  "max_retries": 0,
+  "lede_char_limit": 80,
+  "evidence_char_limit": 48,
+  "people_max_layouts": 3,
+  "allowed_hosts": [
+    "bbc.co.uk",
+    "bbc.com",
+    "feeds.bbci.co.uk",
+    "news.un.org",
+    "paper.people.com.cn",
+    "rss.dw.com",
+    "science.nasa.gov",
+    "wmo.int",
+    "www.bbc.co.uk",
+    "www.bbc.com",
+    "www.channelnewsasia.com",
+    "www.dw.com",
+    "www.fao.org",
+    "www.federalreserve.gov",
+    "www.france24.com",
+    "www.gov.cn",
+    "www.mfa.gov.cn",
+    "www.nasa.gov",
+    "www.news.cn",
+    "www.rfi.fr"
+  ],
+  "sources": {
+    "gov": {
+      "name": "中国政府网",
+      "list_url": "https://www.gov.cn/yaowen/liebiao/YAOWENLIEBIAO.json",
+      "enabled": true
+    },
+    "people": {
+      "name": "人民日报",
+      "layout_base": "https://paper.people.com.cn/rmrb/pc/layout/{ymd}/node_{nn}.html",
+      "enabled": true
+    },
+    "mfa": {
+      "name": "外交部",
+      "list_url": "https://www.mfa.gov.cn/wjdt_674879/fyrbt_674889/",
+      "enabled": true
+    },
+    "un": {
+      "name": "联合国新闻",
+      "kind": "un_rss",
+      "list_url": "https://news.un.org/feed/subscribe/zh/news/all/rss.xml",
+      "enabled": true,
+      "max_candidates": 6
+    },
+    "fao": {
+      "name": "联合国粮农组织",
+      "kind": "fao_rss",
+      "list_url": "https://www.fao.org/feeds/fao-newsroom-rss-zh",
+      "enabled": true,
+      "max_candidates": 6
+    },
+    "wmo": {
+      "name": "世界气象组织",
+      "kind": "wmo_html",
+      "list_url": "https://wmo.int/zh-hans",
+      "enabled": true,
+      "max_candidates": 6
+    },
+    "bbc_world": {
+      "name": "BBC · 政治与安全",
+      "kind": "bbc_rss",
+      "list_url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+      "article_hosts": [
+        "www.bbc.com",
+        "www.bbc.co.uk",
+        "bbc.com",
+        "bbc.co.uk"
+      ],
+      "topic": "政治与安全",
+      "max_candidates": 5,
+      "enabled": true,
+      "display_name": "BBC"
+    },
+    "bbc_business": {
+      "name": "BBC · 经济与金融",
+      "kind": "bbc_rss",
+      "list_url": "https://feeds.bbci.co.uk/news/business/rss.xml",
+      "article_hosts": [
+        "www.bbc.com",
+        "www.bbc.co.uk",
+        "bbc.com",
+        "bbc.co.uk"
+      ],
+      "topic": "经济与金融",
+      "max_candidates": 5,
+      "enabled": true,
+      "display_name": "BBC"
+    },
+    "bbc_technology": {
+      "name": "BBC · 科技与产业",
+      "kind": "bbc_rss",
+      "list_url": "https://feeds.bbci.co.uk/news/technology/rss.xml",
+      "article_hosts": [
+        "www.bbc.com",
+        "www.bbc.co.uk",
+        "bbc.com",
+        "bbc.co.uk"
+      ],
+      "topic": "科技与产业",
+      "max_candidates": 5,
+      "enabled": true,
+      "display_name": "BBC"
+    },
+    "bbc_science": {
+      "name": "BBC · 气候与环境",
+      "kind": "bbc_rss",
+      "list_url": "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+      "article_hosts": [
+        "www.bbc.com",
+        "www.bbc.co.uk",
+        "bbc.com",
+        "bbc.co.uk"
+      ],
+      "topic": "气候与环境",
+      "max_candidates": 5,
+      "enabled": true,
+      "display_name": "BBC"
+    },
+    "bbc_health": {
+      "name": "BBC · 健康与公共卫生",
+      "kind": "bbc_rss",
+      "list_url": "https://feeds.bbci.co.uk/news/health/rss.xml",
+      "article_hosts": [
+        "www.bbc.com",
+        "www.bbc.co.uk",
+        "bbc.com",
+        "bbc.co.uk"
+      ],
+      "topic": "健康与公共卫生",
+      "max_candidates": 5,
+      "enabled": true,
+      "display_name": "BBC"
+    },
+    "xinhua_world": {
+      "name": "新华社 · 国际",
+      "kind": "xinhua_html",
+      "list_url": "https://www.news.cn/world/",
+      "article_hosts": [
+        "www.news.cn"
+      ],
+      "topic": "",
+      "max_candidates": 10,
+      "enabled": true,
+      "display_name": "新华网"
+    },
+    "xinhua_tech": {
+      "name": "新华社 · 科技",
+      "kind": "xinhua_html",
+      "list_url": "https://www.news.cn/tech/",
+      "article_hosts": [
+        "www.news.cn"
+      ],
+      "topic": "科技与产业",
+      "max_candidates": 8,
+      "enabled": true,
+      "display_name": "新华网"
+    },
+    "xinhua_economy": {
+      "name": "新华社 · 经济",
+      "kind": "xinhua_html",
+      "list_url": "https://www.news.cn/fortune/",
+      "article_hosts": [
+        "www.news.cn"
+      ],
+      "topic": "经济与金融",
+      "max_candidates": 8,
+      "enabled": true,
+      "display_name": "新华网"
+    },
+    "dw": {
+      "name": "德国之声中文",
+      "kind": "dw_rss",
+      "list_url": "https://rss.dw.com/rdf/rss-chi-all",
+      "article_hosts": [
+        "www.dw.com"
+      ],
+      "topic": "",
+      "max_candidates": 10,
+      "enabled": true
+    },
+    "rfi": {
+      "name": "法国国际广播电台中文",
+      "kind": "rfi_rss",
+      "list_url": "https://www.rfi.fr/cn/rss",
+      "article_hosts": [
+        "www.rfi.fr"
+      ],
+      "topic": "",
+      "max_candidates": 10,
+      "enabled": true
+    },
+    "france24": {
+      "name": "France 24",
+      "kind": "f24_rss",
+      "list_url": "https://www.france24.com/en/rss",
+      "article_hosts": [
+        "www.france24.com"
+      ],
+      "topic": "",
+      "max_candidates": 8,
+      "enabled": true
+    },
+    "cna": {
+      "name": "CNA",
+      "kind": "cna_rss",
+      "list_url": "https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml",
+      "article_hosts": [
+        "www.channelnewsasia.com"
+      ],
+      "topic": "",
+      "max_candidates": 12,
+      "enabled": true
+    },
+    "nasa": {
+      "name": "NASA",
+      "kind": "nasa_rss",
+      "list_url": "https://www.nasa.gov/feed/",
+      "article_hosts": [
+        "www.nasa.gov",
+        "science.nasa.gov"
+      ],
+      "topic": "科技与产业",
+      "max_candidates": 6,
+      "enabled": true
+    },
+    "fed": {
+      "name": "美联储",
+      "kind": "fed_rss",
+      "list_url": "https://www.federalreserve.gov/feeds/press_all.xml",
+      "article_hosts": [
+        "www.federalreserve.gov"
+      ],
+      "topic": "经济与金融",
+      "max_candidates": 4,
+      "enabled": true
+    }
+  },
+  "balanced_selection": true,
+  "max_per_source": 6,
+  "max_per_region": 10,
+  "fetch_workers": 6,
+  "include_reading_links": true,
+  "max_reading_links": 18,
+  "chinese_digest": {
+    "enabled": true,
+    "model": "deepseek-flash",
+    "max_requests": 42,
+    "budget_seconds": 480,
+    "timeout_seconds": 30,
+    "min_interval_seconds": 0.5
+  }
+}

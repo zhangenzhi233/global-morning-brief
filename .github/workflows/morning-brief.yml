@@ -1,0 +1,96 @@
+name: Morning Brief
+
+on:
+  schedule:
+    # Bounded wake-ups compensate for observed multi-hour schedule delays.
+    # The gate checks ACTUAL Beijing time, not the nominal cron time.
+    - cron: '7,27,47 19,20 * * *'
+    - cron: '7 22,0 * * *'
+    - cron: '17 23 * * *'  # Primary: 07:17 Beijing, hold prepared issue until 07:30.
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run（不发送邮件）'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: morning-brief
+  cancel-in-progress: false
+
+jobs:
+  brief:
+    if: ${{ github.event_name != 'schedule' || vars.ENABLE_SCHEDULE == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check date and existing delivery before AI
+        id: gate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MANUAL_DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: python3 schedule_guard.py
+
+      - name: Setup Python
+        if: steps.gate.outputs.action != 'skip'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        if: steps.gate.outputs.action != 'skip'
+        run: python -m pip install -r requirements.txt
+
+      - name: Run tests
+        if: steps.gate.outputs.action != 'skip'
+        # Tests never call the live model or send email.
+        env:
+          NEWS_AI_LIVE: '0'
+        run: python -m unittest discover -s tests -v
+
+      - name: Dry run (manual preview)
+        if: steps.gate.outputs.action == 'dry-run'
+        env:
+          NEWS_AI_API_KEY: ${{ secrets.NEWS_AI_API_KEY }}
+          NEWS_AI_LIVE: '1'
+        run: python briefing.py --dry-run --digest-preview
+
+      - name: Send (schedule, or manual send)
+        if: steps.gate.outputs.action == 'send'
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_FROM_NAME: ${{ vars.SMTP_FROM_NAME || '环球早报' }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          NEWS_AI_API_KEY: ${{ secrets.NEWS_AI_API_KEY }}
+          NOT_BEFORE: ${{ steps.gate.outputs.not_before }}
+        run: |
+          if [ -n "$NOT_BEFORE" ]; then
+            python briefing.py --send --not-before "$NOT_BEFORE"
+          else
+            python briefing.py --send
+          fi
+
+      - name: Upload artifacts
+        if: ${{ always() && steps.gate.outputs.action != 'skip' && steps.gate.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: morning-brief
+          path: |
+            run-output/brief.html
+            run-output/brief.txt
+            run-output/brief.json
+            run-output/report.json
+          if-no-files-found: warn
+          retention-days: 7
