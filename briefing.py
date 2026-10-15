@@ -1111,18 +1111,26 @@ def render_item_txt(idx: int, it: dict) -> str:
 
 
 def render_plain(items: list[dict], meta: dict) -> str:
-    from email_layout import title, credit
+    from email_layout import title, credit, reading_sections
     labels = {"event_time": "事件时间", "location": "地点", "subject": "人物或机构"}
     lines = [f"环球早报 {meta['today']}", f"采集截止：{meta['now_display']}",
              f"正式新闻 {len(items)} 条 · 最新报道链接 {len(meta.get('reading_links', []))} 条", ""]
-    if not items:
+    sections = reading_sections(items, meta.get('reading_links', []))
+    if meta.get('sample_notice'):
+        lines.append(meta['sample_notice'])
+    if not sections:
         lines.append("今日未取得可核验新消息；三要素缺项报道另列。")
-    for group_name, group in (("三要素齐全报道", items), ("最新报道链接 · 含中文整理", meta.get('reading_links', []))):
-        if not group:
-            continue
-        lines.extend(["", "【" + group_name + "】"])
-        for it in group:
-            lines.extend(["", f"[{it['category']}] {title(it)}", f"来源：{credit(it)}；发布：{it['publish_time']}（北京时间）"])
+    else:
+        lines.extend(["【本期目录】", "记住新闻编号，方便下次查找。"])
+        for category, _target, entries in sections:
+            lines.append("【" + category + "】")
+            lines.extend(f"{number:02d} {title(it)}" for number, it, _formal in entries)
+    for category, _target, entries in sections:
+        lines.extend(["", "【" + category + "】"])
+        for number, it, formal in entries:
+            status = "三要素齐全" if formal else "要素待核实"
+            lines.extend(["", f"{number:02d} {title(it)}", status,
+                          f"来源：{credit(it)}；发布：{it['publish_time']}（北京时间）"])
             digest = it.get('digest')
             if digest:
                 if digest['status'] == 'unavailable':
@@ -1132,7 +1140,10 @@ def render_plain(items: list[dict], meta: dict) -> str:
                     lines.extend("· " + d['text'] for d in digest.get('details', []))
                     if digest.get('insight'):
                         lines.append("【简短解读 · 推断】" + digest['insight']['text'])
-                    lines.append({"ok":"简体中文整理 · AI辅助","partial":"简体中文整理 · 未通过校验的片段已省略"}.get(digest['status'],"简体中文摘编 · 解读暂未生成"))
+                    status_note = {"ok":"简体中文整理 · AI辅助","partial":"简体中文整理 · 未通过校验的片段已省略"}.get(digest['status'],"简体中文摘编 · 解读暂未生成")
+                    if digest.get('provenance') == 'fictional_sample':
+                        status_note = "人工构造的虚构样张 · 非真实新闻或接口输出"
+                    lines.append(status_note)
                     if digest.get('basis') != '正文':
                         lines.append("仅据RSS摘要整理，未读取完整正文。")
                 elements = digest['elements']
